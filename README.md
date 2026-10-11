@@ -3,56 +3,97 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cicero Camera</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cicero - Luyện tập</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background-color: #f4f4f9;
       padding: 20px;
     }
-    h1 { color: #333; }
-    #video {
+
+    video {
       width: 100%;
-      max-width: 500px;
-      border: 3px solid #333;
-      border-radius: 8px;
-      background: #000;
+      max-width: 640px;
+      background: #222;
+      border-radius: 12px;
     }
+
     button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-top: 15px;
-      cursor: pointer;
+      padding: 12px 18px;
+      margin: 8px;
       border: none;
-      border-radius: 5px;
-      background-color: #28a745;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    #start {
+      background: #2563eb;
       color: white;
     }
-    button:hover { background-color: #218838; }
+
+    #stop {
+      background: #ddd;
+      color: #222;
+    }
   </style>
 </head>
-<body>
 
-  <h1>cicero-camera</h1>
-  <video id="video" autoplay playsinline></video>
-  <br>
-  <button id="start-btn">Mở Camera</button>
+<body>
+  <h2>Cicero - Luyện tập thuyết trình</h2>
+
+  <video id="camera" autoplay muted playsinline></video>
+
+  <p id="status">Camera và micro chưa bật</p>
+
+  <button id="start">Bật camera và micro</button>
+  <button id="stop" disabled>Tắt camera và micro</button>
 
   <script>
-    const video = document.getElementById('video');
-    const startBtn = document.getElementById('start-btn');
+    const camera = document.getElementById("camera");
+    const status = document.getElementById("status");
+    const start = document.getElementById("start");
+    const stop = document.getElementById("stop");
 
-    startBtn.addEventListener('click', async () => {
+    let stream = null;
+
+    start.addEventListener("click", async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        video.srcObject = stream;
-      } catch (err) {
-        alert('Không thể truy cập camera: ' + err.message);
+        status.textContent = "Đang xin quyền camera và micro...";
+
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true
+        });
+
+        camera.srcObject = stream;
+        await camera.play();
+
+        status.textContent = "Camera và micro đã được bật!";
+        start.disabled = true;
+        stop.disabled = false;
+
+      } catch (error) {
+        status.textContent =
+          "Không bật được camera hoặc micro: " + error.name;
+
+        console.error(error);
       }
     });
-  </script>
 
+    stop.addEventListener("click", () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+      }
+
+      camera.srcObject = null;
+      status.textContent = "Camera và micro chưa bật";
+      start.disabled = false;
+      stop.disabled = true;
+    });
+  </script>
 </body>
 </html>
